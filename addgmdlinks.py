@@ -22,6 +22,11 @@ gmd_title = '%s MS Spectrum'
 wiki_markup = '* [%s] %s'  # wiki-link + descr
 wiki_external_links = '==External links==\r\n'
 
+regexp_ab = re.compile(r'\{\{(nobots|bots\|(allow=none|deny=.*?' + bot_name + r'.*?|optout=all|deny=all))\}\}')
+ 
+def allow_bots(text):
+    return not regexp_ab.search(text)
+
 def get_molecules_from_xlsx(fn):
     workbook = px.load_workbook(fn)
     page = workbook.get_sheet_by_name(name='Wikipedia')
@@ -56,6 +61,9 @@ def main(argv):
         # Edit page
         page = site.Pages[title].resolve_redirect()
         text = page.edit()
+
+        if not allow_bots(text): # skip when we find this page doesn't allow edits by bots
+            continue
 
         # ok, let's try to add this
         link_m = re.search(metabolite_id, text, re.I)
