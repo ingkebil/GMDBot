@@ -4,7 +4,6 @@
 
 __author__ = "Kenny Billiau"
 __copyright__ = "2014, GMD"
-__credits__ = "Kenny Billiau"
 __license__ = "GPL v2"
 __version__ = "0.1"
 

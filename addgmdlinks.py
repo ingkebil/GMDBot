@@ -4,7 +4,6 @@
 
 __author__ = "Kenny Billiau"
 __copyright__ = "2014, GMD"
-__credits__ = "Kenny Billiau"
 __license__ = "GPL v2"
 __version__ = "0.1"
 
@@ -19,7 +18,7 @@ bot_name = 'GMDBot'
 
 gmd_link = 'http://gmd.mpimp-golm.mpg.de/Spectrums/%s.aspx'
 gmd_title = '%s MS Spectrum'
-wiki_markup = '* [%s] %s'  # wiki-link + descr
+wiki_markup = '* [%s %s]'  # wiki-link + descr
 wiki_external_links = '==External links==\r\n'
 
 regexp_ab = re.compile(r'\{\{(nobots|bots\|(allow=none|deny=.*?' + bot_name + r'.*?|optout=all|deny=all))\}\}')
@@ -45,8 +44,8 @@ def main(argv):
         links = get_molecules_from_xlsx(argv[0])
 
     # compile some regex's
-    ref_list_re = re.compile('==References==', re.I)
-    ext_links_re = re.compile('==External links==', re.I)
+    ref_list_re = re.compile(r'==\s*References\s*==.*?\n\n', re.I | re.S) # dotall so we newlines match with .
+    ext_links_re = re.compile(r'==\s*External links.*?==', re.I)
 
 
     # log into wikipedia
@@ -73,11 +72,11 @@ def main(argv):
                 ref_list_m = ref_list_re.search(text)
                 if ref_list_m is not None:
                     # add External Links
-                    text = text[:ref_list_m.start()] + \
+                    text = text[:ref_list_m.end()] + \
                            wiki_external_links + \
                            wiki_markup % (gmd_link % metabolite_id, gmd_title % title) + \
                            '\r\n' + \
-                           text[ref_list_m.start():] + \
+                           text[ref_list_m.end():] + \
                            '\r\n'
 
             else:
@@ -86,20 +85,18 @@ def main(argv):
                 text = text[:ext_links_m.end()] + \
                        '\r\n' + \
                        wiki_markup % (gmd_link % metabolite_id, gmd_title % title) + \
-                       '\r\n' + \
                        text[ext_links_m.end():] + \
                        '\r\n'
-
-        print text
-        ch = sys.stdin.readline()
-        if ch.rstrip().lower() == 'y':
-            print page.save(text, summary = 'Added Mass Spectrometry link to the Golm Metabolome Database')
-            print 'SAVED'
+            
+            print text
+            ch = sys.stdin.readline()
+            if ch.rstrip().lower() == 'y':
+                print page.save(text, summary = 'Added Mass Spectrometry link to the Golm Metabolome Database')
+                print 'SAVED'
+            else:
+                print 'SKIPPED'
         else:
-            print 'SKIPPED'
-
-
-
+            print 'ALREADY PRESENT'
 
 if __name__ == '__main__':
     main(sys.argv[1:])
