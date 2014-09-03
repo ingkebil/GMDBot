@@ -50,7 +50,7 @@ def main(argv):
 
     # log into wikipedia
     site = mwclient.Site('en.wikipedia.org')
-    site.login(bot_name, argv[1])
+    #site.login(bot_name, argv[1])
 
     for metabolite in links:
         title = metabolite[0]
